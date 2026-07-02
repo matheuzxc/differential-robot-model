@@ -69,7 +69,11 @@ A modelagem cinemática tem início relacionando o giro independente dos motores
 Assumindo condição de rolamento sem deslizamento, as velocidades lineares individuais da roda esquerda ($v_L$) e da roda direita ($v_R$) são apresentadas, respectivamente, na [Equação 2](#eq2) e na [Equação 3](#eq3), dadas pela multiplicação de suas velocidades angulares pelo raio $r$ do pneu:
 
 <a id="eq2"></a>
-$$v_L = \omega_L \cdot r \tag{2}$$
+$$
+
+v_L = \omega_L \cdot r \tag{2}
+
+$$
 
 <a id="eq3"></a>
 $$
