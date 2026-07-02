@@ -112,19 +112,19 @@ A decomposição trigonométrica da velocidade linear gera as taxas de variaçã
 
 
 $$
-\dot{x} = v \cdot \cos(\phi) \tag{6}
+\dot{x} = v \cdot \cos(\phi)
 $$
 
 
 
 $$
-\dot{y} = v \cdot \sin(\phi) \tag{7}
+\dot{y} = v \cdot \sin(\phi) 
 $$
 
 
 
 $$
-\dot{\phi} = \omega \tag{8}
+\dot{\phi} = \omega 
 $$
 
 A substituição das expressões deduzidas de $v$ e $\omega$ nestas equações globais resulta no sistema linear que compõe a matriz Jacobiana, apresentada na [Equação 9](#eq9).
