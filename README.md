@@ -108,23 +108,18 @@ O comportamento cinemático resultante é apresentado na Figura 3.
 
 As variáveis $v$ e $\omega$ descrevem o movimento apenas no referencial local do robô. A projeção desse movimento no referencial global $\{X, Y\}$ é realizada utilizando a orientação atual $\phi$. 
 
-A decomposição trigonométrica da velocidade linear gera as taxas de variação nas coordenadas cartesianas, mostradas na [Equação 6](#eq6) e na [Equação 7](#eq7), enquanto a velocidade angular local corresponde à taxa de variação da orientação global indicada na [Equação 8](#eq8):
-
-
-$$
-\dot{x} = v \cdot \cos(\phi)
-$$
-
-
+A decomposição trigonométrica da velocidade linear gera as taxas de variação nas coordenadas cartesianas, mostradas na Equação 6 e na Equação 7, enquanto a velocidade angular local corresponde à taxa de variação da orientação global indicada na Equação 8 <a id="eq6"></a><a id="eq7"></a><a id="eq8"></a>:
 
 $$
-\dot{y} = v \cdot \sin(\phi) 
+\dot{x} = v \cdot \cos(\phi) \tag{6}
 $$
 
-
+$$
+\dot{y} = v \cdot \sin(\phi) \tag{7}
+$$
 
 $$
-\dot{\phi} = \omega 
+\dot{\phi} = \omega \tag{8}
 $$
 
 A substituição das expressões deduzidas de $v$ e $\omega$ nestas equações globais resulta no sistema linear que compõe a matriz Jacobiana, apresentada na [Equação 9](#eq9).
