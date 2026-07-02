@@ -112,16 +112,19 @@ A decomposição trigonométrica da velocidade linear gera as taxas de variaçã
 
 
 <a id="eq6"></a>
+
 $$
 \dot{x} = v \cdot \cos(\phi) \qquad (6)
 $$
 
 <a id="eq7"></a>
+
 $$
 \dot{y} = v \cdot \sin(\phi) \qquad (7)
 $$
 
 <a id="eq8"></a>
+
 $$
 \dot{\phi} = \omega \qquad (8)
 $$
