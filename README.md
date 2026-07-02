@@ -111,13 +111,22 @@ As variáveis $v$ e $\omega$ descrevem o movimento apenas no referencial local d
 A decomposição trigonométrica da velocidade linear gera as taxas de variação nas coordenadas cartesianas, mostradas na [Equação 6](#eq6) e na [Equação 7](#eq7), enquanto a velocidade angular local corresponde à taxa de variação da orientação global indicada na [Equação 8](#eq8):
 
 <a id="eq6"></a>
-$$\dot{x} = v \cdot \cos(\phi) \tag{6}$$
+
+$$
+\dot{x} = v \cdot \cos(\phi) \tag{6}
+$$
 
 <a id="eq7"></a>
-$$\dot{y} = v \cdot \sin(\phi) \tag{7}$$
+
+$$
+\dot{y} = v \cdot \sin(\phi) \tag{7}
+$$
 
 <a id="eq8"></a>
-$$\dot{\phi} = \omega \tag{8}$$
+
+$$
+\dot{\phi} = \omega \tag{8}
+$$
 
 A substituição das expressões deduzidas de $v$ e $\omega$ nestas equações globais resulta no sistema linear que compõe a matriz Jacobiana, apresentada na [Equação 9](#eq9).
 
