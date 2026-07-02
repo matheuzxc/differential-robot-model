@@ -69,12 +69,10 @@ A modelagem cinemática tem início relacionando o giro independente dos motores
 Assumindo condição de rolamento sem deslizamento, as velocidades lineares individuais da roda esquerda ($v_L$) e da roda direita ($v_R$) são apresentadas, respectivamente, na [Equação 2](#eq2) e na [Equação 3](#eq3), dadas pela multiplicação de suas velocidades angulares pelo raio $r$ do pneu:
 
 <a id="eq2"></a>
-$v_L = \omega_L \cdot r \tag{2}$
+$$v_L = \omega_L \cdot r \tag{2}$$
 
 <a id="eq3"></a>
-$$
-v_R = \omega_R \cdot r \tag{3}
-$$
+$$v_R = \omega_R \cdot r \tag{3}$$
 
 Como as rodas estão alinhadas em um eixo rígido de comprimento $2d$ (bitola), qualquer diferença de velocidade entre elas faz o robô orbitar em torno de um Centro Instantâneo de Rotação (ICR). A partir da geometria desse movimento orbital, ilustrada na Figura 2, calculam-se as velocidades resultantes no ponto médio do eixo do robô.
 
@@ -89,16 +87,12 @@ Como as rodas estão alinhadas em um eixo rígido de comprimento $2d$ (bitola), 
 A velocidade linear resultante $v$, que translada o chassi, é expressa pela média aritmética das velocidades das rodas, conforme a [Equação 4](#eq4):
 
 <a id="eq4"></a>
-$$
-v = \frac{v_R + v_L}{2} = \frac{r(\omega_R + \omega_L)}{2} \tag{4}
-$$
+$$v = \frac{v_R + v_L}{2} = \frac{r(\omega_R + \omega_L)}{2} \tag{4}$$
 
 A velocidade angular $\omega$, que rotaciona o chassi em torno do próprio eixo, é descrita na [Equação 5](#eq5), sendo gerada pela diferença de velocidade entre as rodas dividida pela distância $2d$:
 
 <a id="eq5"></a>
-$$
-\omega = \frac{v_R - v_L}{2d} = \frac{r(\omega_R - \omega_L)}{2d} \tag{5}
-$$
+$$\omega = \frac{v_R - v_L}{2d} = \frac{r(\omega_R - \omega_L)}{2d} \tag{5}$$
 
 O comportamento cinemático resultante é apresentado na Figura 3.
 
@@ -117,26 +111,18 @@ As variáveis $v$ e $\omega$ descrevem o movimento apenas no referencial local d
 A decomposição trigonométrica da velocidade linear gera as taxas de variação nas coordenadas cartesianas, mostradas na [Equação 6](#eq6) e na [Equação 7](#eq7), enquanto a velocidade angular local corresponde à taxa de variação da orientação global indicada na [Equação 8](#eq8):
 
 <a id="eq6"></a>
-$$
-\dot{x} = v \cdot \cos(\phi) \tag{6}
-$$
+$$\dot{x} = v \cdot \cos(\phi) \tag{6}$$
 
 <a id="eq7"></a>
-$$
-\dot{y} = v \cdot \sin(\phi) \tag{7}
-$$
+$$\dot{y} = v \cdot \sin(\phi) \tag{7}$$
 
 <a id="eq8"></a>
-$$
-\dot{\phi} = \omega \tag{8}
-$$
+$$\dot{\phi} = \omega \tag{8}$$
 
 A substituição das expressões deduzidas de $v$ e $\omega$ nestas equações globais resulta no sistema linear que compõe a matriz Jacobiana, apresentada na [Equação 9](#eq9).
 
 <a id="eq9"></a>
-$$
-\begin{bmatrix} \dot{x} \\ \dot{y} \\ \dot{\phi} \end{bmatrix} = \begin{bmatrix} \frac{r}{2}\cos(\phi) & \frac{r}{2}\cos(\phi) \\ \frac{r}{2}\sin(\phi) & \frac{r}{2}\sin(\phi) \\ \frac{r}{2d} & -\frac{r}{2d} \end{bmatrix} \begin{bmatrix} \omega_R \\ \omega_L \end{bmatrix} \tag{9}
-$$
+$$\begin{bmatrix} \dot{x} \\ \dot{y} \\ \dot{\phi} \end{bmatrix} = \begin{bmatrix} \frac{r}{2}\cos(\phi) & \frac{r}{2}\cos(\phi) \\ \frac{r}{2}\sin(\phi) & \frac{r}{2}\sin(\phi) \\ \frac{r}{2d} & -\frac{r}{2d} \end{bmatrix} \begin{bmatrix} \omega_R \\ \omega_L \end{bmatrix} \tag{9}$$
 
 Onde:
 - $r$: Raio das rodas motrizes.
