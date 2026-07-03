@@ -1,0 +1,31 @@
+# Environments
+venv/
+env/
+.venv/
+env.bak/
+venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configurações de IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Distribuição / Empacotamento
+dist/
+build/
+*.egg-info/
+
+# Variáveis de Ambiente
+.env
+
+# Dependências Python (se usar pipenv ou poetry e não quiser enviar o virtualenv local, já cobertos acima)

@@ -1,36 +1,6 @@
-# Título do Repositório
+# Modelo Cinemático de Robô Diferencial
 
-[Uma linha com uma descrição curta e direta do que é o projeto]
-
-## Objetivo
-
-Este projeto visa detalhar a dedução matemática das equações cinemáticas de um robô móvel com tração diferencial e, posteriormente, validar o modelo através de uma simulação computacional desenvolvida em Python.
-
-## Índice
-
-* [Pré-requisitos](#pré-requisitos)
-* [Estrutura do Repositório](#estrutura-do-repositório)
-* [Dedução do Modelo Cinemático](#dedução-do-modelo-cinemático)
-* [Simulação em Python](#simulação-em-python)
-* [Como Executar](#como-executar)
-* [Autor](#autor)
-
-## Pré-requisitos
-
-[Liste aqui o que a pessoa precisa ter instalado na máquina para rodar o seu código]
-* Python 3.x
-* NumPy
-* Matplotlib (caso tenha gerado gráficos da trajetória)
-
-## Estrutura do Repositório
-
-[Explique rapidamente o que tem em cada pasta, se houver]
-* `src/`: Códigos da simulação.
-* `img/`: Imagens utilizadas neste README.
-
-# Título do Repositório
-
-[Uma linha com uma descrição curta e direta do que é o projeto]
+Simulação cinemática e geração de trajetórias animadas para um robô móvel com tração diferencial, validando o modelo matemático através de animações desenvolvidas em Python.
 
 ## Objetivo
 
@@ -47,16 +17,19 @@ Este projeto visa detalhar a dedução matemática das equações cinemáticas d
 
 ## Pré-requisitos
 
-[Liste aqui o que a pessoa precisa ter instalado na máquina para rodar o seu código]
+Para executar a simulação e gerar os gráficos e animações, você precisará das seguintes bibliotecas Python:
 * Python 3.x
 * NumPy
-* Matplotlib (caso tenha gerado gráficos da trajetória)
+* Matplotlib
+* Seaborn
+* Pillow (para salvar os GIFs animados)
 
 ## Estrutura do Repositório
 
-[Explique rapidamente o que tem em cada pasta, se houver]
-* `src/`: Códigos da simulação.
-* `img/`: Imagens utilizadas neste README.
+O repositório possui a seguinte estrutura de arquivos principais:
+* `diferential_robot_kinematics.py`: Script principal que executa a simulação e gera os GIFs e SVGs das trajetórias.
+* `diferential_robot_trajeotory.py`: Script auxiliar de simulação de trajetória.
+* `imagens/`: Diretório que contém os diagramas vetoriais utilizados na explicação matemática deste README.
 
 ## Dedução do Modelo Cinemático
 
@@ -186,22 +159,98 @@ Onde:
 
 ## Simulação em Python
 
-[Descreva como a matemática foi traduzida para o código. Fale rapidamente sobre a lógica de atualização dos estados x, y e phi ao longo do tempo (integração numérica)]
+A transição da modelagem matemática para o ambiente de simulação em Python foi realizada mapeando diretamente as equações da cinemática para uma estrutura de laço de repetição. Utilizando a biblioteca NumPy, as taxas de variação espaciais puderam ser calculadas a cada incremento de tempo, seja de forma escalar ou através da multiplicação da matriz Jacobiana pelo vetor de velocidades das rodas.
+
+Como o modelo matemático descreve um sistema de tempo contínuo e o computador processa dados de forma discreta, a simulação utiliza o método de integração numérica de Euler de primeira ordem. Para isso, define-se um intervalo de amostragem constante, representado no código por $\Delta t$ (ou $dt$).
+
+A cada passo iterativo, o algoritmo calcula as velocidades instantâneas no referencial global ($\dot{x}$, $\dot{y}$ e $\dot{\phi}$) utilizando a orientação $\phi$ do instante anterior. O estado atualizado do robô é então obtido somando o estado passado com o deslocamento calculado para aquele pequeno intervalo de tempo, resultando na seguinte lógica de atualização:
+
+$$x[i]=x[i-1]+\dot{x}\cdot dt$$
+
+$$y[i]=y[i-1]+\dot{y}\cdot dt$$
+
+$$\phi[i]=\phi[i-1]+\dot{\phi}\cdot dt$$
+
+Através dessa acumulação iterativa, a simulação consegue projetar a evolução temporal completa da postura do robô, permitindo traçar sua trajetória no plano cartesiano de maneira fiel à matemática do modelo não-holonômico.
+
+## Resultados da Simulação
+
+Para validar a modelagem cinemática e a implementação matricial, o algoritmo foi testado em quatro cenários de movimentação distintos. Acompanhe abaixo os resultados gráficos demonstrando a trajetória no plano XY e a evolução temporal dos estados de posição e orientação.
+
+### Movimentação para Frente
+
+Neste primeiro cenário de teste, ambas as rodas recebem a mesma velocidade angular positiva. Como não há diferença de velocidade entre as rodas motrizes, a taxa de variação da orientação do robô é nula. O resultado é um deslocamento puramente translacional em linha reta para frente.
+
+<div align="center">
+  <em>Figura 4: Animação do movimento para frente.</em>
+  <br>
+  <img src="./imagens/animacao_Frente.gif" alt="Animação - Movimento para Frente">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
+
+### Movimentação para Trás
+
+De forma análoga ao movimento para frente, aqui as rodas direita e esquerda giram com a mesma velocidade angular, porém com valores negativos. O robô descreve um movimento retilíneo em marcha à ré, sem sofrer nenhuma alteração em sua orientação inicial.
+
+<div align="center">
+  <em>Figura 5: Animação do movimento para trás.</em>
+  <br>
+  <img src="./imagens/animacao_Tras.gif" alt="Animação - Movimento para Trás">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
+
+### Curva à Esquerda
+
+Para realizar uma trajetória em curva à esquerda, a roda direita gira com uma velocidade angular maior que a roda esquerda. Essa diferença de velocidades gera uma taxa de rotação positiva no referencial global. Isso faz com que o robô altere sua orientação no sentido anti-horário enquanto avança pelo plano.
+
+<div align="center">
+  <em>Figura 6: Animação da curva à esquerda.</em>
+  <br>
+  <img src="./imagens/animacao_Curva_Esquerda.gif" alt="Animação - Curva à Esquerda">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
+
+### Curva à Direita
+
+O movimento de curva à direita é executado aplicando uma velocidade angular maior na roda esquerda em comparação à roda direita. O efeito cinemático é uma taxa de rotação negativa, que altera a orientação do chassi no sentido horário ao longo da integração temporal.
+
+<div align="center">
+  <em>Figura 7: Animação da curva à direita.</em>
+  <br>
+  <img src="./imagens/animacao_Curva_Direita.gif" alt="Animação - Curva à Direita">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
 
 ## Como Executar
 
-[Coloque o passo a passo de comandos para o usuário rodar o seu script no terminal, tipo clonar o repo e rodar o python main.py]
-
-## Autor
-
-Matheus Nunes Franco (Sapo)
-Engenharia Mecatrônica - UFSC Joinville
-
-[Descreva como a matemática foi traduzida para o código. Fale rapidamente sobre a lógica de atualização dos estados x, y e phi ao longo do tempo (integração numérica)]
-
-## Como Executar
-
-[Coloque o passo a passo de comandos para o usuário rodar o seu script no terminal, tipo clonar o repo e rodar o python main.py]
+1. Clone este repositório para a sua máquina local:
+   ```bash
+   git clone https://github.com/matheuzxc/differential-robot-model.git
+   ```
+2. Acesse o diretório do projeto:
+   ```bash
+   cd differential-robot-model
+   ```
+3. (Opcional) Ative o ambiente virtual já incluso (ou crie um novo):
+   ```bash
+   # No Windows:
+   .\venv\Scripts\activate
+   # No Linux/Mac:
+   source venv/bin/activate
+   ```
+4. Instale as dependências usando o arquivo de requisitos:
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. Execute a simulação:
+   ```bash
+   python diferential_robot_kinematics.py
+   ```
+6. Aguarde a finalização do script. Os arquivos `.gif` e `.svg` referentes aos movimentos executados serão salvos na pasta `imagens/`.
 
 ## Autor
 
