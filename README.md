@@ -254,5 +254,5 @@ O movimento de curva à direita é executado aplicando uma velocidade angular ma
 
 ## Autor
 
-Matheus Nunes Franco (Sapo)
+Matheus Nunes Franco - 
 Engenharia Mecatrônica - UFSC Joinville
