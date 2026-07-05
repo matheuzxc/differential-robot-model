@@ -175,20 +175,14 @@ Através dessa acumulação iterativa, a simulação consegue projetar a evoluç
 
 ### Estrutura e Funcionamento do Código
 
-A implementação foi dividida em dois scripts principais, ambos focados na reprodutibilidade e na clareza da integração numérica:
+A implementação principal no script **`diferential_robot_kinematics.py`** é focada na reprodutibilidade e na clareza da integração numérica para os cenários básicos (frente, trás, e curvas no próprio eixo).
 
-1. **`diferential_robot_kinematics.py`**:
-   - **Objetivo**: Avaliar os cenários básicos (frente, trás, e curvas no próprio eixo).
-   - **Funcionamento**: A função central `simular_cinematica()` recebe as velocidades dos motores (`wL`, `wR`). Ela inicializa arrays de zeros para $x$, $y$ e $\phi$. Dentro de um loop `for` de tamanho correspondente ao tempo total dividido por $\Delta t$, as velocidades $v$ e $\omega$ são calculadas usando a cinemática vista na dedução. Logo após, a integração de Euler soma a variação do passo de tempo aos estados do robô.
-   - Ao final da simulação, o código utiliza os recursos de animação e *patches* (formas geométricas) da biblioteca `matplotlib` para desenhar iterativamente o robô percorrendo o caminho, gerando as figuras estáticas (SVG) e as animações (GIF) apresentadas neste repositório.
-
-2. **`diferential_robot_trajeotory.py`**:
-   - **Objetivo**: Testar transições contínuas entre comandos variados de controle (Trajetória Sequencial).
-   - **Funcionamento**: Semelhante ao script anterior, mas introduz uma função auxiliar atuando como uma máquina de estados finitos que avalia a variável do tempo global `t`. Dependendo do instante de tempo, a máquina despacha um par de velocidades diferente para as rodas (ex: acelerar reto por 2 segundos, e depois girar 90 graus). O loop integrador consome essa resposta contínua, permitindo avaliar rotas arbitrárias sem interrupções.
+A função central `simular_cinematica()` recebe as velocidades dos motores (`wL`, `wR`). Ela inicializa arrays de zeros para $x$, $y$ e $\phi$. Dentro de um loop `for` de tamanho correspondente ao tempo total dividido por $\Delta t$, as velocidades $v$ e $\omega$ são calculadas usando a cinemática vista na dedução. Logo após, a integração de Euler soma a variação do passo de tempo aos estados do robô.
+Ao final da simulação, o código utiliza os recursos de animação e *patches* (formas geométricas) da biblioteca `matplotlib` para desenhar iterativamente o robô percorrendo o caminho, gerando as figuras estáticas (SVG) e as animações (GIF) apresentadas neste repositório.
 
 ### Resultados da Simulação
 
-Para validar a modelagem cinemática e a implementação matricial, o algoritmo foi testado em quatro cenários de movimentação distintos (cinemática básica) e em uma trajetória sequencial complexa. 
+Para validar a modelagem cinemática e a implementação matricial, o algoritmo foi testado em quatro cenários de movimentação distintos (cinemática básica). 
 
 Os resultados visuais gerados pelas simulações são estruturados em dois painéis analíticos:
 - **Painel Esquerdo (Trajetória X-Y):** Exibe o plano espacial bidimensional, plotando o caminho físico percorrido pelo robô. A sobreposição da geometria do chassi auxilia na visualização imediata da orientação instantânea.
@@ -266,12 +260,11 @@ O movimento de curva à direita é executado aplicando uma velocidade angular ma
    ```bash
    pip install -r requirements.txt
    ```
-5. Execute as simulações:
+5. Execute a simulação:
    ```bash
    python diferential_robot_kinematics.py
-   python diferential_robot_trajeotory.py
    ```
-6. Aguarde a finalização dos scripts. Os arquivos `.gif` e `.svg` referentes aos movimentos básicos serão salvos na pasta `imagens/`, enquanto a animação da trajetória sequencial será salva na raiz do projeto.
+6. Aguarde a finalização do script. Os arquivos `.gif` e `.svg` referentes aos movimentos básicos serão salvos na pasta `imagens/`.
 
 ## Autor
 
