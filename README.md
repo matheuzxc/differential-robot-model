@@ -43,7 +43,7 @@ O esquema geral do robô diferencial pode ser visto na Figura 1, onde o ponto ce
   <br>
   <img src="./imagens/robot_esquema.svg" alt="Diagrama do robô diferencial">
   <br>
-  <em>Fonte: Próprio autor.</em>
+  <em>Fonte: Adaptado de Lynch e Park (2017).</em>
 </div>
 
 O vetor de estados que representa a cinemática do robô diferencial pode ser observado na [Equação 1](#eq1).
@@ -68,9 +68,9 @@ O comportamento desse vetor é definido pela função de cinemática direta $f(\
 
 ### Dedução das Velocidades Locais
 
-A modelagem cinemática tem início relacionando o giro independente dos motores com o movimento local do chassi do robô. 
+A modelagem cinemática tem início relacionando o giro independente dos motores com o movimento local do chassi do robô, partindo de restrições geométricas fundamentais.
 
-Assumindo condição de rolamento sem deslizamento, as velocidades lineares individuais da roda esquerda ($v_L$) e da roda direita ($v_R$) são apresentadas, respectivamente, na [Equação 2](#eq2) e na [Equação 3](#eq3), dadas pela multiplicação de suas velocidades angulares pelo raio $r$ do pneu:
+A principal premissa matemática assume **restrições de não-capotamento e não-escorregamento**. Isto é, as rodas mantêm contato constante com o solo (sem tombar) e realizam um movimento de rolamento puro (sem derrapar lateralmente ou patinar longitudinalmente). Sob essas condições, as velocidades lineares individuais da roda esquerda ($v_L$) e da roda direita ($v_R$) são dadas, respectivamente, na [Equação 2](#eq2) e na [Equação 3](#eq3), obtidas pela multiplicação de suas velocidades angulares pelo raio $r$ do pneu:
 
 <a id="eq2"></a>
 
@@ -84,14 +84,14 @@ $$
 v_R = \omega_R \cdot r \qquad (3)
 $$
 
-Como as rodas estão alinhadas em um eixo rígido de comprimento $2d$ (bitola), qualquer diferença de velocidade entre elas faz o robô orbitar em torno de um Centro Instantâneo de Rotação (ICR). A partir da geometria desse movimento orbital, ilustrada na Figura 2, calculam-se as velocidades resultantes no ponto médio do eixo do robô.
+Como as rodas estão alinhadas em um eixo rígido de comprimento $2d$ (bitola), qualquer diferença de velocidade entre elas ($v_R \neq v_L$) faz o robô orbitar em torno de um Centro Instantâneo de Rotação (ICR). A geometria desse movimento orbital é ilustrada na Figura 2, onde o parâmetro $R$ denota a distância (raio de curvatura) do centro geométrico do robô até o ICR. É a partir dessa relação geométrica de triângulos semelhantes que se calculam as velocidades resultantes no ponto médio do eixo do robô.
 
 <div align="center">
   <em>Figura 2: Esquema de parâmetros do robô diferencial e o ICR.</em>
   <br>
   <img src="./imagens/robot_esquema_icr.svg" alt="Diagrama do ICR do robô diferencial">
   <br>
-  <em>Fonte: Próprio autor.</em>
+  <em>Fonte: Adaptado de Lynch e Park (2017).</em>
 </div>
 
 A velocidade linear resultante $v$, que translada o chassi, é expressa pela média aritmética das velocidades das rodas, conforme a [Equação 4](#eq4):
@@ -110,14 +110,14 @@ $$
 \omega = \frac{v_R - v_L}{2d} = \frac{r(\omega_R - \omega_L)}{2d} \qquad (5)
 $$
 
-O comportamento cinemático resultante é apresentado na Figura 3.
+O comportamento cinemático resultante da combinação dessas duas componentes é apresentado na Figura 3. Nela, observa-se que o vetor de velocidade linear $v$ (em azul) atua sempre na direção longitudinal da orientação atual $\phi$, sendo responsável por transladar o chassi pelo plano. Simultaneamente, a velocidade angular $\omega$ (em laranja) atua em torno do centro do eixo trator, sendo responsável por alterar instantaneamente essa mesma orientação $\phi$.
 
 <div align="center">
   <em>Figura 3: Esquema de movimento do robô diferencial.</em>
   <br>
   <img src="./imagens/robot_esquema_mov.svg" alt="Diagrama de movimento do robô diferencial">
   <br>
-  <em>Fonte: Próprio autor.</em>
+  <em>Fonte: Adaptado de Lynch e Park (2017).</em>
 </div>
 
 ### Projeção no Referencial Global
@@ -173,9 +173,28 @@ $$\phi[i]=\phi[i-1]+\dot{\phi}\cdot dt$$
 
 Através dessa acumulação iterativa, a simulação consegue projetar a evolução temporal completa da postura do robô, permitindo traçar sua trajetória no plano cartesiano de maneira fiel à matemática do modelo não-holonômico.
 
-## Resultados da Simulação
+### Estrutura e Funcionamento do Código
 
-Para validar a modelagem cinemática e a implementação matricial, o algoritmo foi testado em quatro cenários de movimentação distintos. Acompanhe abaixo os resultados gráficos demonstrando a trajetória no plano XY e a evolução temporal dos estados de posição e orientação.
+A implementação foi dividida em dois scripts principais, ambos focados na reprodutibilidade e na clareza da integração numérica:
+
+1. **`diferential_robot_kinematics.py`**:
+   - **Objetivo**: Avaliar os cenários básicos (frente, trás, e curvas no próprio eixo).
+   - **Funcionamento**: A função central `simular_cinematica()` recebe as velocidades dos motores (`wL`, `wR`). Ela inicializa arrays de zeros para $x$, $y$ e $\phi$. Dentro de um loop `for` de tamanho correspondente ao tempo total dividido por $\Delta t$, as velocidades $v$ e $\omega$ são calculadas usando a cinemática vista na dedução. Logo após, a integração de Euler soma a variação do passo de tempo aos estados do robô.
+   - Ao final da simulação, o código utiliza os recursos de animação e *patches* (formas geométricas) da biblioteca `matplotlib` para desenhar iterativamente o robô percorrendo o caminho, gerando as figuras estáticas (SVG) e as animações (GIF) apresentadas neste repositório.
+
+2. **`diferential_robot_trajeotory.py`**:
+   - **Objetivo**: Testar transições contínuas entre comandos variados de controle (Trajetória Sequencial).
+   - **Funcionamento**: Semelhante ao script anterior, mas introduz uma função auxiliar atuando como uma máquina de estados finitos que avalia a variável do tempo global `t`. Dependendo do instante de tempo, a máquina despacha um par de velocidades diferente para as rodas (ex: acelerar reto por 2 segundos, e depois girar 90 graus). O loop integrador consome essa resposta contínua, permitindo avaliar rotas arbitrárias sem interrupções.
+
+### Resultados da Simulação
+
+Para validar a modelagem cinemática e a implementação matricial, o algoritmo foi testado em quatro cenários de movimentação distintos (cinemática básica) e em uma trajetória sequencial complexa. 
+
+Os resultados visuais gerados pelas simulações são estruturados em dois painéis analíticos:
+- **Painel Esquerdo (Trajetória X-Y):** Exibe o plano espacial bidimensional, plotando o caminho físico percorrido pelo robô. A sobreposição da geometria do chassi auxilia na visualização imediata da orientação instantânea.
+- **Painel Direito (Evolução das Variáveis):** Apresenta gráficos temporais contínuos para cada variável de estado (posição $x$, posição $y$ e orientação $\phi$), permitindo avaliar detalhadamente a resposta do sistema integrado ao longo do tempo.
+
+Acompanhe abaixo os resultados gráficos demonstrando a evolução espacial e temporal nos testes.
 
 ### Movimentação para Frente
 
@@ -225,6 +244,7 @@ O movimento de curva à direita é executado aplicando uma velocidade angular ma
   <em>Fonte: Elaborado pelo autor.</em>
 </div>
 
+
 ## Como Executar
 
 1. Clone este repositório para a sua máquina local:
@@ -246,13 +266,19 @@ O movimento de curva à direita é executado aplicando uma velocidade angular ma
    ```bash
    pip install -r requirements.txt
    ```
-5. Execute a simulação:
+5. Execute as simulações:
    ```bash
    python diferential_robot_kinematics.py
+   python diferential_robot_trajeotory.py
    ```
-6. Aguarde a finalização do script. Os arquivos `.gif` e `.svg` referentes aos movimentos executados serão salvos na pasta `imagens/`.
+6. Aguarde a finalização dos scripts. Os arquivos `.gif` e `.svg` referentes aos movimentos básicos serão salvos na pasta `imagens/`, enquanto a animação da trajetória sequencial será salva na raiz do projeto.
 
 ## Autor
 
 Matheus Nunes Franco - 
 Engenharia Mecatrônica - UFSC Joinville
+
+## Referências
+
+Para mais detalhes teóricos sobre esses mecanismos de tração e a modelagem apresentada, consulte:
+* LYNCH, Kevin M.; PARK, Frank C. **Modern Robotics - Mechanics, Planning, and Control**. Capítulo 13. Cambridge University Press. Uma playlist em vídeo com as aulas correspondentes a este capítulo também é disponibilizada online pelos autores.

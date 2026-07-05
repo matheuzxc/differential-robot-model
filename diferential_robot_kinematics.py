@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.transforms as transforms
 from matplotlib.animation import FuncAnimation
 import seaborn as sns
 import os
@@ -52,13 +54,20 @@ cenarios = {
     "Curva_Direita": [5.0, 2.0]
 }
 
-# Funcao de atualizacao isolada para evitar vazamento de memoria no loop
-def atualizar(frame, t, x, y, phi, l_traj, l_x, l_y, l_phi):
+def atualizar(frame, t, x, y, phi, l_traj, l_x, l_y, l_phi, chassis, wheel_L, wheel_R, caster, center, ax_traj):
     l_traj.set_data(x[:frame], y[:frame])
     l_x.set_data(t[:frame], x[:frame])
     l_y.set_data(t[:frame], y[:frame])
     l_phi.set_data(t[:frame], phi[:frame])
-    return l_traj, l_x, l_y, l_phi
+    
+    tr = transforms.Affine2D().rotate(phi[frame]).translate(x[frame], y[frame]) + ax_traj.transData
+    chassis.set_transform(tr)
+    wheel_L.set_transform(tr)
+    wheel_R.set_transform(tr)
+    caster.set_transform(tr)
+    center.set_transform(tr)
+    
+    return l_traj, l_x, l_y, l_phi, chassis, wheel_L, wheel_R, caster, center
 
 passos_totais = int(tf_simulacao / dt_simulacao)
 
@@ -103,6 +112,20 @@ for nome, (wL, wR) in cenarios.items():
     ax_phi.set_xlabel('Tempo (s)')
     linha_phi, = ax_phi.plot([], [], color='green', linewidth=2)
     
+    # Adicionando o robô como patches (formas) no gráfico
+    chassis = patches.Polygon([[-0.1, 0.15], [0.1, 0.15], [0.2, 0], [0.1, -0.15], [-0.1, -0.15]], 
+                              closed=True, edgecolor='black', facecolor='white', linewidth=2, zorder=3)
+    wheel_L = patches.Rectangle((-0.05, 0.08), 0.1, 0.04, edgecolor='black', facecolor='tab:blue', zorder=4)
+    wheel_R = patches.Rectangle((-0.05, -0.12), 0.1, 0.04, edgecolor='black', facecolor='tab:blue', zorder=4)
+    caster = patches.Circle((0.15, 0), 0.025, edgecolor='black', facecolor='tab:blue', zorder=4)
+    center = patches.Circle((0, 0), 0.02, edgecolor='black', facecolor='black', zorder=5)
+
+    ax_traj.add_patch(chassis)
+    ax_traj.add_patch(wheel_L)
+    ax_traj.add_patch(wheel_R)
+    ax_traj.add_patch(caster)
+    ax_traj.add_patch(center)
+    
     fig.tight_layout()
     
     # --- Passo 1: Salvar a versao estatica em SVG (Grafico completo) ---
@@ -110,6 +133,14 @@ for nome, (wL, wR) in cenarios.items():
     linha_x.set_data(t, x)
     linha_y.set_data(t, y)
     linha_phi.set_data(t, phi)
+    
+    # Atualiza posicao do robo para o ultimo frame
+    tr_final = transforms.Affine2D().rotate(phi[-1]).translate(x[-1], y[-1]) + ax_traj.transData
+    chassis.set_transform(tr_final)
+    wheel_L.set_transform(tr_final)
+    wheel_R.set_transform(tr_final)
+    caster.set_transform(tr_final)
+    center.set_transform(tr_final)
     
     nome_svg = os.path.join('imagens', f'estatico_{nome}.svg')
     fig.savefig(nome_svg, format='svg', bbox_inches='tight')
@@ -125,7 +156,7 @@ for nome, (wL, wR) in cenarios.items():
         fig, 
         atualizar, 
         frames=passos_totais, 
-        fargs=(t, x, y, phi, linha_traj, linha_x, linha_y, linha_phi), 
+        fargs=(t, x, y, phi, linha_traj, linha_x, linha_y, linha_phi, chassis, wheel_L, wheel_R, caster, center, ax_traj), 
         interval=50, 
         blit=True
     )
