@@ -42,16 +42,28 @@ def simular_cinematica(wL, wR, r=0.05, d=0.1, dt=0.05, tf=5.0):
         
     return t, x, y, phi
 
+def simular_cinematica_inversa(v, w, r=0.05, d=0.1):
+    """
+    Cinematica Inversa: 
+    Recebe a velocidade linear (v) e angular (w) desejadas para o chassi
+    e retorna as velocidades angulares necessarias nas rodas (wL, wR).
+    """
+    wR = (v + d * w) / r
+    wL = (v - d * w) / r
+    return wL, wR
+
 raio_roda = 0.05
 dist_roda = 0.1 
 tf_simulacao = 5.0
 dt_simulacao = 0.05
 
+# Cenarios de teste definidos pelas velocidades ALVO do chassi (v, w)
+# para testar a Cinematica Inversa
 cenarios = {
-    "Frente": [5.0, 5.0],
-    "Tras": [-5.0, -5.0],
-    "Curva_Esquerda": [2.0, 5.0],
-    "Curva_Direita": [5.0, 2.0]
+    "Frente": [0.25, 0.0],
+    "Tras": [-0.25, 0.0],
+    "Curva_Esquerda": [0.175, 0.75],
+    "Curva_Direita": [0.175, -0.75]
 }
 
 def atualizar(frame, t, x, y, phi, l_traj, l_x, l_y, l_phi, chassis, wheel_L, wheel_R, caster, center, ax_traj):
@@ -74,9 +86,15 @@ passos_totais = int(tf_simulacao / dt_simulacao)
 print("Iniciando a renderização dos SVGs e GIFs. Isso pode levar um minutinho...")
 os.makedirs('imagens', exist_ok=True)
 
-for nome, (wL, wR) in cenarios.items():
+for nome, (v_alvo, w_alvo) in cenarios.items():
     print(f"Renderizando cenário: {nome}...")
     
+    # --- Passo 1: CINEMATICA INVERSA ---
+    # Descobre quais velocidades de roda sao necessarias para atingir o (v, w) desejado
+    wL, wR = simular_cinematica_inversa(v_alvo, w_alvo, r=raio_roda, d=dist_roda)
+    
+    # --- Passo 2: CINEMATICA DIRETA ---
+    # Simula o movimento aplicando essas velocidades nas rodas
     t, x, y, phi = simular_cinematica(wL, wR, r=raio_roda, d=dist_roda, dt=dt_simulacao, tf=tf_simulacao)
     
     fig = plt.figure(figsize=(10, 5))
@@ -167,4 +185,102 @@ for nome, (wL, wR) in cenarios.items():
     # Fechando a figura para liberar memoria para a proxima iteracao
     plt.close(fig)
 
-print("Processo finalizado! SVGs e GIFs salvos na pasta 'imagens/'.")
+print("Processo finalizado! SVGs e GIFs da Cinematica Inversa salvos na pasta 'imagens/'.")
+
+# ============================================================================
+# CINEMATICA DIRETA: cenarios com velocidades de roda (wL, wR) especificadas diretamente
+# O algoritmo recebe as velocidades de entrada e integra a postura via Euler.
+# ============================================================================
+
+cenarios_direta = {
+    "Rotacao_Pura": [-5.0, 5.0],
+    "Arco": [3.0, 5.0]
+}
+
+print("\nIniciando a renderização dos cenários de Cinemática Direta...")
+
+for nome, (wL, wR) in cenarios_direta.items():
+    print(f"Renderizando cenário (Direta): {nome}...")
+    
+    # Cinematica Direta: integra diretamente a partir das velocidades das rodas
+    t, x, y, phi = simular_cinematica(wL, wR, r=raio_roda, d=dist_roda, dt=dt_simulacao, tf=tf_simulacao)
+    
+    fig = plt.figure(figsize=(10, 5))
+    gs = fig.add_gridspec(3, 2, width_ratios=[1.2, 1])
+    
+    ax_traj = fig.add_subplot(gs[:, 0])
+    ax_traj.set_xlim(-1.5, 1.5)
+    ax_traj.set_ylim(-1.5, 1.5)
+    ax_traj.set_aspect('equal')
+    ax_traj.set_xlabel('Posição X (m)')
+    ax_traj.set_ylabel('Posição Y (m)')
+    linha_traj, = ax_traj.plot([], [], color='black', linewidth=2, label=f'$\\omega_L$={wL}, $\\omega_R$={wR}')
+    ax_traj.legend(loc='upper right')
+    
+    ax_x = fig.add_subplot(gs[0, 1])
+    ax_x.set_xlim(0, tf_simulacao)
+    ax_x.set_ylim(-1.5, 1.5)
+    ax_x.set_ylabel('x (m)')
+    linha_x, = ax_x.plot([], [], color='blue', linewidth=2)
+    
+    ax_y = fig.add_subplot(gs[1, 1], sharex=ax_x)
+    ax_y.set_ylim(-1.5, 1.5)
+    ax_y.set_ylabel('y (m)')
+    linha_y, = ax_y.plot([], [], color='red', linewidth=2)
+    
+    ax_phi = fig.add_subplot(gs[2, 1], sharex=ax_x)
+    ax_phi.set_ylim(-30, 30)
+    ax_phi.set_ylabel('$\\phi$ (rad)')
+    ax_phi.set_xlabel('Tempo (s)')
+    linha_phi, = ax_phi.plot([], [], color='green', linewidth=2)
+    
+    chassis_d = patches.Polygon([[-0.1, 0.15], [0.1, 0.15], [0.2, 0], [0.1, -0.15], [-0.1, -0.15]], 
+                              closed=True, edgecolor='black', facecolor='white', linewidth=2, zorder=3)
+    wheel_L_d = patches.Rectangle((-0.05, 0.08), 0.1, 0.04, edgecolor='black', facecolor='tab:blue', zorder=4)
+    wheel_R_d = patches.Rectangle((-0.05, -0.12), 0.1, 0.04, edgecolor='black', facecolor='tab:blue', zorder=4)
+    caster_d = patches.Circle((0.15, 0), 0.025, edgecolor='black', facecolor='tab:blue', zorder=4)
+    center_d = patches.Circle((0, 0), 0.02, edgecolor='black', facecolor='black', zorder=5)
+
+    ax_traj.add_patch(chassis_d)
+    ax_traj.add_patch(wheel_L_d)
+    ax_traj.add_patch(wheel_R_d)
+    ax_traj.add_patch(caster_d)
+    ax_traj.add_patch(center_d)
+    
+    fig.tight_layout()
+    
+    linha_traj.set_data(x, y)
+    linha_x.set_data(t, x)
+    linha_y.set_data(t, y)
+    linha_phi.set_data(t, phi)
+    
+    tr_final = transforms.Affine2D().rotate(phi[-1]).translate(x[-1], y[-1]) + ax_traj.transData
+    chassis_d.set_transform(tr_final)
+    wheel_L_d.set_transform(tr_final)
+    wheel_R_d.set_transform(tr_final)
+    caster_d.set_transform(tr_final)
+    center_d.set_transform(tr_final)
+    
+    nome_svg = os.path.join('imagens', f'estatico_direta_{nome}.svg')
+    fig.savefig(nome_svg, format='svg', bbox_inches='tight')
+    
+    linha_traj.set_data([], [])
+    linha_x.set_data([], [])
+    linha_y.set_data([], [])
+    linha_phi.set_data([], [])
+    
+    anim = FuncAnimation(
+        fig, 
+        atualizar, 
+        frames=passos_totais, 
+        fargs=(t, x, y, phi, linha_traj, linha_x, linha_y, linha_phi, chassis_d, wheel_L_d, wheel_R_d, caster_d, center_d, ax_traj), 
+        interval=50, 
+        blit=True
+    )
+    
+    nome_gif = os.path.join('imagens', f'animacao_direta_{nome}.gif')
+    anim.save(nome_gif, writer='pillow', fps=20)
+    
+    plt.close(fig)
+
+print("Processo finalizado! SVGs e GIFs da Cinematica Direta salvos na pasta 'imagens/'.")
