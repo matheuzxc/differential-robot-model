@@ -29,3 +29,13 @@ build/
 .env
 
 # Dependências Python (se usar pipenv ou poetry e não quiser enviar o virtualenv local, já cobertos acima)
+
+# Arquivos temporários de imagem na raiz (ignorar)
+/*.gif
+/*.svg
+/*.png
+
+# Mas garantir que a pasta imagens seja versionada
+!imagens/
+!imagens/*.gif
+!imagens/*.svg

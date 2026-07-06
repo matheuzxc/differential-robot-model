@@ -6,7 +6,6 @@ from matplotlib.animation import FuncAnimation
 import seaborn as sns
 import os
 
-# Configuracao global do Seaborn
 sns.set_theme(
     style="whitegrid",
     rc={
@@ -21,6 +20,11 @@ sns.set_theme(
 )
 
 def simular_cinematica(wL, wR, r=0.05, d=0.1, dt=0.05, tf=5.0):
+    """
+    Cinematica Direta do modelo Diferencial:
+    Recebe a velocidade angular da roda esquerda (wL) e direita (wR) aplicadas,
+    e retorna a evolucao temporal da postura (x, y, phi) do chassi via integracao de Euler.
+    """
     passos = int(tf / dt)
     t = np.linspace(0, tf, passos)
     
@@ -44,9 +48,9 @@ def simular_cinematica(wL, wR, r=0.05, d=0.1, dt=0.05, tf=5.0):
 
 def simular_cinematica_inversa(v, w, r=0.05, d=0.1):
     """
-    Cinematica Inversa: 
+    Cinematica Inversa do modelo Diferencial:
     Recebe a velocidade linear (v) e angular (w) desejadas para o chassi
-    e retorna as velocidades angulares necessarias nas rodas (wL, wR).
+    e retorna a velocidade angular necessaria em cada roda (wL, wR).
     """
     wR = (v + d * w) / r
     wL = (v - d * w) / r
@@ -57,8 +61,6 @@ dist_roda = 0.1
 tf_simulacao = 5.0
 dt_simulacao = 0.05
 
-# Cenarios de teste definidos pelas velocidades ALVO do chassi (v, w)
-# para testar a Cinematica Inversa
 cenarios = {
     "Frente": [0.25, 0.0],
     "Tras": [-0.25, 0.0],
@@ -128,7 +130,7 @@ for nome, (v_alvo, w_alvo) in cenarios.items():
     linha_traj, = ax_traj.plot([], [], color='black', linewidth=2, label=f'$\\omega_L$={wL}, $\\omega_R$={wR}')
     ax_traj.legend(loc='upper right')
     
-    # Estado X -> Velocidade v
+    # Estado X
     ax_x = fig.add_subplot(gs[0, 1])
     ax_x.set_xlim(0, tf_simulacao)
     ax_x.set_ylim(-0.5, 0.5)
@@ -136,14 +138,14 @@ for nome, (v_alvo, w_alvo) in cenarios.items():
     linha_x, = ax_x.plot([], [], color='blue', linewidth=2, label=f'v = {v_alvo:.2f} m/s')
     ax_x.legend(loc='upper right')
     
-    # Estado Y -> Velocidade angular w
+    # Estado Y
     ax_y = fig.add_subplot(gs[1, 1], sharex=ax_x)
     ax_y.set_ylim(-1.5, 1.5)
     ax_y.set_ylabel('$\\omega$ (rad/s)')
     linha_y, = ax_y.plot([], [], color='red', linewidth=2, label=f'$\\omega$ = {w_alvo:.2f} rad/s')
     ax_y.legend(loc='upper right')
     
-    # Estado Phi -> Velocidades Calculadas wL e wR
+    # Estado Phi
     ax_phi = fig.add_subplot(gs[2, 1], sharex=ax_x)
     ax_phi.set_ylim(-15, 15)
     ax_phi.set_ylabel('Rodas (rad/s)')
