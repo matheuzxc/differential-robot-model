@@ -81,6 +81,24 @@ def atualizar(frame, t, x, y, phi, l_traj, l_x, l_y, l_phi, chassis, wheel_L, wh
     
     return l_traj, l_x, l_y, l_phi, chassis, wheel_L, wheel_R, caster, center
 
+def atualizar_inversa(frame, t, x, y, phi, v_val, w_val, wL_val, wR_val, l_traj, l_x, l_y, l_phi, l_wR, chassis, wheel_L, wheel_R, caster, center, ax_traj):
+    l_traj.set_data(x[:frame], y[:frame])
+    
+    # Arrays preenchidos com o valor constante ate o frame atual
+    l_x.set_data(t[:frame], np.full(frame, v_val))
+    l_y.set_data(t[:frame], np.full(frame, w_val))
+    l_phi.set_data(t[:frame], np.full(frame, wL_val))
+    l_wR.set_data(t[:frame], np.full(frame, wR_val))
+    
+    tr = transforms.Affine2D().rotate(phi[frame]).translate(x[frame], y[frame]) + ax_traj.transData
+    chassis.set_transform(tr)
+    wheel_L.set_transform(tr)
+    wheel_R.set_transform(tr)
+    caster.set_transform(tr)
+    center.set_transform(tr)
+    
+    return l_traj, l_x, l_y, l_phi, l_wR, chassis, wheel_L, wheel_R, caster, center
+
 passos_totais = int(tf_simulacao / dt_simulacao)
 
 print("Iniciando a renderização dos SVGs e GIFs. Isso pode levar um minutinho...")
@@ -110,25 +128,29 @@ for nome, (v_alvo, w_alvo) in cenarios.items():
     linha_traj, = ax_traj.plot([], [], color='black', linewidth=2, label=f'$\\omega_L$={wL}, $\\omega_R$={wR}')
     ax_traj.legend(loc='upper right')
     
-    # Estado X
+    # Estado X -> Velocidade v
     ax_x = fig.add_subplot(gs[0, 1])
     ax_x.set_xlim(0, tf_simulacao)
-    ax_x.set_ylim(-1.5, 1.5)
-    ax_x.set_ylabel('x (m)')
-    linha_x, = ax_x.plot([], [], color='blue', linewidth=2)
+    ax_x.set_ylim(-0.5, 0.5)
+    ax_x.set_ylabel('v (m/s)')
+    linha_x, = ax_x.plot([], [], color='blue', linewidth=2, label=f'v = {v_alvo:.2f} m/s')
+    ax_x.legend(loc='upper right')
     
-    # Estado Y
+    # Estado Y -> Velocidade angular w
     ax_y = fig.add_subplot(gs[1, 1], sharex=ax_x)
     ax_y.set_ylim(-1.5, 1.5)
-    ax_y.set_ylabel('y (m)')
-    linha_y, = ax_y.plot([], [], color='red', linewidth=2)
+    ax_y.set_ylabel('$\\omega$ (rad/s)')
+    linha_y, = ax_y.plot([], [], color='red', linewidth=2, label=f'$\\omega$ = {w_alvo:.2f} rad/s')
+    ax_y.legend(loc='upper right')
     
-    # Estado Phi
+    # Estado Phi -> Velocidades Calculadas wL e wR
     ax_phi = fig.add_subplot(gs[2, 1], sharex=ax_x)
-    ax_phi.set_ylim(-4, 4)
-    ax_phi.set_ylabel('$\\phi$ (rad)')
+    ax_phi.set_ylim(-15, 15)
+    ax_phi.set_ylabel('Rodas (rad/s)')
     ax_phi.set_xlabel('Tempo (s)')
-    linha_phi, = ax_phi.plot([], [], color='green', linewidth=2)
+    linha_phi, = ax_phi.plot([], [], color='green', linewidth=2, label=f'$\\omega_L$ = {wL:.2f} rad/s')
+    linha_wR, = ax_phi.plot([], [], color='orange', linewidth=2, label=f'$\\omega_R$ = {wR:.2f} rad/s')
+    ax_phi.legend(loc='upper right')
     
     # Adicionando o robô como patches (formas) no gráfico
     chassis = patches.Polygon([[-0.1, 0.15], [0.1, 0.15], [0.2, 0], [0.1, -0.15], [-0.1, -0.15]], 
@@ -148,9 +170,10 @@ for nome, (v_alvo, w_alvo) in cenarios.items():
     
     # --- Passo 1: Salvar a versao estatica em SVG (Grafico completo) ---
     linha_traj.set_data(x, y)
-    linha_x.set_data(t, x)
-    linha_y.set_data(t, y)
-    linha_phi.set_data(t, phi)
+    linha_x.set_data(t, np.full(len(t), v_alvo))
+    linha_y.set_data(t, np.full(len(t), w_alvo))
+    linha_phi.set_data(t, np.full(len(t), wL))
+    linha_wR.set_data(t, np.full(len(t), wR))
     
     # Atualiza posicao do robo para o ultimo frame
     tr_final = transforms.Affine2D().rotate(phi[-1]).translate(x[-1], y[-1]) + ax_traj.transData
@@ -168,13 +191,14 @@ for nome, (v_alvo, w_alvo) in cenarios.items():
     linha_x.set_data([], [])
     linha_y.set_data([], [])
     linha_phi.set_data([], [])
+    linha_wR.set_data([], [])
     
     # --- Passo 3: Criar e salvar a animacao ---
     anim = FuncAnimation(
         fig, 
-        atualizar, 
+        atualizar_inversa, 
         frames=passos_totais, 
-        fargs=(t, x, y, phi, linha_traj, linha_x, linha_y, linha_phi, chassis, wheel_L, wheel_R, caster, center, ax_traj), 
+        fargs=(t, x, y, phi, v_alvo, w_alvo, wL, wR, linha_traj, linha_x, linha_y, linha_phi, linha_wR, chassis, wheel_L, wheel_R, caster, center, ax_traj), 
         interval=50, 
         blit=True
     )
@@ -193,8 +217,10 @@ print("Processo finalizado! SVGs e GIFs da Cinematica Inversa salvos na pasta 'i
 # ============================================================================
 
 cenarios_direta = {
-    "Rotacao_Pura": [-5.0, 5.0],
-    "Arco": [3.0, 5.0]
+    "Direta_Frente": [5.0, 5.0],
+    "Direta_Tras": [-5.0, -5.0],
+    "Direta_Curva_Esquerda": [2.0, 5.0],
+    "Direta_Curva_Direita": [5.0, 2.0]
 }
 
 print("\nIniciando a renderização dos cenários de Cinemática Direta...")

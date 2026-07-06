@@ -175,19 +175,29 @@ Através dessa acumulação iterativa, a simulação consegue projetar a evoluç
 
 ### Estrutura e Funcionamento do Código
 
-A implementação principal no script **`diferential_robot_kinematics.py`** contém duas funções centrais:
+Para garantir a máxima clareza pedagógica e alinhar a simulação com a teoria, a implementação no script **`diferential_robot_kinematics.py`** foi rigorosamente dividida em duas funções centrais. É fundamental compreender a diferença exata entre os **dados de entrada (Inputs)** e os **resultados calculados (Outputs)** em cada uma delas:
 
-1. **`simular_cinematica_inversa(v, w)`**: Recebe a velocidade linear $v$ e angular $\omega$ desejadas para o chassi e retorna as velocidades angulares necessárias nas rodas ($\omega_L$, $\omega_R$). A relação é dada por: $\omega_R = \frac{v + d \cdot \omega}{r}$ e $\omega_L = \frac{v - d \cdot \omega}{r}$.
+#### 1. Cinemática Inversa (`simular_cinematica_inversa(v, w)`)
+A cinemática inversa responde à pergunta: *"Se eu quero que o robô faça um determinado movimento no espaço, quão rápido cada motor deve girar?"* É utilizada para **controle e planejamento de trajetória**.
+- **Entradas (Inputs):** O movimento espacial **desejado** para o chassi. Consiste na velocidade linear ($v$) em metros por segundo, e na velocidade angular ($\omega$) em radianos por segundo.
+- **Saídas (Outputs):** Os comandos que devem ser enviados aos motores. O algoritmo calcula e retorna as velocidades angulares estritamente necessárias para a Roda Esquerda ($\omega_L$) e para a Roda Direita ($\omega_R$).
+- **Matemática Aplicada:** $\omega_R = \frac{v + d \cdot \omega}{r}$ e $\omega_L = \frac{v - d \cdot \omega}{r}$.
 
-2. **`simular_cinematica(wL, wR)`**: Recebe as velocidades angulares das rodas e calcula a postura contínua do veículo $(x(t), y(t), \phi(t))$ via integração numérica de Euler. Dentro de um loop `for`, as velocidades $v$ e $\omega$ são calculadas usando a cinemática direta e o estado é atualizado somando a variação do passo de tempo.
+#### 2. Cinemática Direta (`simular_cinematica(wL, wR)`)
+A cinemática direta responde à pergunta: *"Se eu aplicar essas velocidades específicas nos motores, qual será o caminho físico que o robô vai percorrer?"* É utilizada para **odometria e simulação**.
+- **Entradas (Inputs):** A ação mecânica **real** nos motores. Consiste unicamente nas velocidades angulares aplicadas na Roda Esquerda ($\omega_L$) e Roda Direita ($\omega_R$).
+- **Saídas (Outputs):** O estado resultante no referencial global bidimensional. O algoritmo integra numericamente o movimento e devolve a postura contínua do veículo ao longo do tempo: Posição $x(t)$, Posição $y(t)$ e Orientação $\phi(t)$.
 
 Ao final da simulação, o código utiliza os recursos de animação e *patches* (formas geométricas) da biblioteca `matplotlib` para desenhar iterativamente o robô percorrendo o caminho, gerando as figuras estáticas (SVG) e as animações (GIF) apresentadas neste repositório.
 
-### Resultados da Simulação
+### Resultados da Simulação e Análise dos Painéis
 
-Os resultados visuais gerados pelas simulações são estruturados em dois painéis analíticos:
-- **Painel Esquerdo (Trajetória X-Y):** Exibe o plano espacial bidimensional, plotando o caminho físico percorrido pelo robô. A sobreposição da geometria do chassi auxilia na visualização imediata da orientação instantânea.
-- **Painel Direito (Evolução das Variáveis):** Apresenta gráficos temporais contínuos para cada variável de estado (posição $x$, posição $y$ e orientação $\phi$), permitindo avaliar detalhadamente a resposta do sistema integrado ao longo do tempo.
+Para refletir com exatidão a diferença entre a Cinemática Inversa e a Cinemática Direta, os resultados visuais gerados pelas simulações foram estruturados em dois painéis analíticos com comportamentos distintos:
+
+- **Painel Esquerdo (Trajetória X-Y):** Em todos os testes, exibe o plano espacial bidimensional, plotando o caminho físico percorrido pelo robô. A sobreposição da geometria do chassi auxilia na visualização imediata da orientação instantânea.
+- **Painel Direito (Evolução Temporal Focada no Tipo de Cinemática):** 
+  - Nos testes de **Cinemática Inversa** (Figuras 4 a 7), o foco da análise é a obtenção das velocidades. Portanto, os gráficos plotam as **Entradas Alvo** ($v$ e $\omega$ constantes definidas pelo usuário) e as **Saídas Calculadas** (velocidades das rodas $\omega_L$ e $\omega_R$ resultantes da matemática).
+  - Nos testes de **Cinemática Direta** (Figuras 8 a 11), o foco da análise é a evolução no espaço. Portanto, os gráficos apresentam as variáveis de estado de postura resultantes da integração passo a passo: Posição $x$, Posição $y$ e Orientação $\phi$.
 
 ## Simulação da Cinemática Inversa (Comandos de Movimentação)
 
@@ -245,26 +255,50 @@ O comando de entrada combina velocidade linear ($v = 0.175$ m/s) com velocidade 
 
 Nesta etapa, as velocidades angulares das rodas ($\omega_L$, $\omega_R$) são fornecidas diretamente como entrada, sem passar pela cinemática inversa. O algoritmo de integração de Euler calcula a postura contínua do veículo $(x(t), y(t), \phi(t))$ ao longo do tempo.
 
-### Rotação Pura
+### Movimentação para Frente
 
-As rodas recebem velocidades angulares iguais em módulo, porém de sinais opostos ($\omega_L = -5.0$ rad/s, $\omega_R = 5.0$ rad/s). A velocidade linear resultante é nula (média zero) e a velocidade angular é máxima, fazendo o robô girar sobre o próprio eixo sem sair do lugar.
+As rodas recebem velocidades angulares iguais e positivas ($\omega_L = 5.0$ rad/s, $\omega_R = 5.0$ rad/s). A integração numérica revela que a velocidade linear resultante é positiva e a velocidade angular é nula, produzindo um deslocamento retilíneo para frente.
 
 <div align="center">
-  <em>Figura 8: Animação da rotação pura.</em>
+  <em>Figura 8: Animação do movimento para frente (Cinemática Direta).</em>
   <br>
-  <img src="./imagens/animacao_direta_Rotacao_Pura.gif" alt="Animação - Rotação Pura">
+  <img src="./imagens/animacao_direta_Direta_Frente.gif" alt="Animação - Movimento para Frente (Direta)">
   <br>
   <em>Fonte: Elaborado pelo autor.</em>
 </div>
 
-### Arco
+### Movimentação para Trás
 
-As rodas recebem velocidades angulares distintas ($\omega_L = 3.0$ rad/s, $\omega_R = 5.0$ rad/s). A integração numérica revela que essa combinação produz uma trajetória em arco. A evolução temporal de $\phi$ mostra um crescimento linear, enquanto $x$ e $y$ descrevem componentes senoidais correspondentes ao arco circular.
+As rodas recebem velocidades angulares iguais e negativas ($\omega_L = -5.0$ rad/s, $\omega_R = -5.0$ rad/s). A integração resulta em um deslocamento retilíneo em marcha à ré, sem alteração na orientação.
 
 <div align="center">
-  <em>Figura 9: Animação do arco.</em>
+  <em>Figura 9: Animação do movimento para trás (Cinemática Direta).</em>
   <br>
-  <img src="./imagens/animacao_direta_Arco.gif" alt="Animação - Arco">
+  <img src="./imagens/animacao_direta_Direta_Tras.gif" alt="Animação - Movimento para Trás (Direta)">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
+
+### Curva à Esquerda
+
+As rodas recebem velocidades angulares distintas ($\omega_L = 2.0$ rad/s, $\omega_R = 5.0$ rad/s). Como a roda direita gira mais rápido, a integração numérica produz uma trajetória curvilínea com rotação no sentido anti-horário.
+
+<div align="center">
+  <em>Figura 10: Animação da curva à esquerda (Cinemática Direta).</em>
+  <br>
+  <img src="./imagens/animacao_direta_Direta_Curva_Esquerda.gif" alt="Animação - Curva à Esquerda (Direta)">
+  <br>
+  <em>Fonte: Elaborado pelo autor.</em>
+</div>
+
+### Curva à Direita
+
+As rodas recebem velocidades angulares distintas ($\omega_L = 5.0$ rad/s, $\omega_R = 2.0$ rad/s). Como a roda esquerda gira mais rápido, a integração numérica produz uma trajetória curvilínea com rotação no sentido horário.
+
+<div align="center">
+  <em>Figura 11: Animação da curva à direita (Cinemática Direta).</em>
+  <br>
+  <img src="./imagens/animacao_direta_Direta_Curva_Direita.gif" alt="Animação - Curva à Direita (Direta)">
   <br>
   <em>Fonte: Elaborado pelo autor.</em>
 </div>
